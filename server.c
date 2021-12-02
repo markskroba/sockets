@@ -47,6 +47,13 @@ int main() {
 		}
 		else if (retval != -1) {
 			printf("message: '%s'\n", buffer);
+			
+			char buffer[1024] = {0};
+			sprintf(buffer, "%s", "test message to client");
+			printf("sending message to client\n");
+			write(active_socket, buffer, sizeof(buffer));
+			printf("mesage sent\n");
+
 			return 0;
 		}
 

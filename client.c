@@ -7,6 +7,7 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdbool.h>
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -41,6 +42,16 @@ int main() {
     printf("message: %s, size: %d\n", buffer,sizeof(buffer));
     write(sockfd, buffer, sizeof(buffer));
     printf("message sent\n");
+
+    while (true) {
+        int retval = read(sockfd, buffer, sizeof(buffer));
+
+        if (retval != -1) {
+            printf("received message: %s\n", buffer);
+            break;
+        }
+        
+    }
 
     return 0;
 }
