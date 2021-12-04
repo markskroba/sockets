@@ -52,7 +52,7 @@ int main() {
 			write(active_socket, buffer, sizeof(buffer));
 			printf("mesage sent\n");
 
-			return 0;
+			// return 0;
 		}
 
 		//adding new sockets

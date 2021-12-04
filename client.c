@@ -20,14 +20,21 @@ struct socket_data {
 };
 
 void* reading_thread_entry(void* args) {
+    // Gets data from the server, prints it to clients
 
     struct socket_data* data = args;
     int sockfd = data->sockfd;
 
-    while(true) {        
-        printf("reading thread\n");
+    while (true) {
+
+        char buffer[1024] = {0};
+        int retval = read(sockfd, buffer, sizeof(buffer));
+        if (retval >= 0) {
+            printf("%s\n", buffer);
+        }
 
         sleep(1);
+
     }
 
     return NULL;
@@ -38,13 +45,18 @@ void* writing_thread_entry(void* args) {
     struct socket_data* data = args;
     int sockfd = data->sockfd;
 
-    char buffer[1024] = {0};
-    fgets(buffer, 1024, stdin);
-    buffer[strcspn(buffer, "\n")] = 0;
+    while (true) {
 
-    write(sockfd, buffer, sizeof(buffer));
+        char buffer[1024] = {0};
+        fgets(buffer, 1024, stdin);
+        buffer[strcspn(buffer, "\n")] = 0;
+
+        write(sockfd, buffer, sizeof(buffer));
+
+    }
 
     return NULL;
+    
 }
 
 int main() {
