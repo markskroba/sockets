@@ -8,11 +8,44 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <pthread.h>
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
 #define PORT 2222
+
+struct socket_data {
+    int sockfd;
+};
+
+void* reading_thread_entry(void* args) {
+
+    struct socket_data* data = args;
+    int sockfd = data->sockfd;
+
+    while(true) {        
+        printf("reading thread\n");
+
+        sleep(1);
+    }
+
+    return NULL;
+}
+
+void* writing_thread_entry(void* args) {
+    // Gets data from the user, writes it to server
+    struct socket_data* data = args;
+    int sockfd = data->sockfd;
+
+    char buffer[1024] = {0};
+    fgets(buffer, 1024, stdin);
+    buffer[strcspn(buffer, "\n")] = 0;
+
+    write(sockfd, buffer, sizeof(buffer));
+
+    return NULL;
+}
 
 int main() {
 
@@ -35,23 +68,38 @@ int main() {
         exit(-1);
     }
 
-    printf("established connection %d\n", retval);
+    // at this point, connection to server should be established
 
-    char buffer[1024] = {0};
-    sprintf(buffer, "%s", "test");
-    printf("message: %s, size: %d\n", buffer,sizeof(buffer));
-    write(sockfd, buffer, sizeof(buffer));
-    printf("message sent\n");
+    // printf("established connection %d\n", retval);
 
-    while (true) {
-        int retval = read(sockfd, buffer, sizeof(buffer));
+    // char buffer[1024] = {0};
+    // fgets(buffer, 1024, stdin);
+    // buffer[strcspn(buffer, "\n")] = 0;
+    // printf("message: %s, size: %d\n", buffer,sizeof(buffer));
+    // write(sockfd, buffer, sizeof(buffer));
+    // printf("message sent\n");
 
-        if (retval != -1) {
-            printf("received message: %s\n", buffer);
-            break;
-        }
+    // while (true) {
+    //     int retval = read(sockfd, buffer, sizeof(buffer));
+
+    //     if (retval != -1) {
+    //         printf("received message: %s\n", buffer);
+    //         break;
+    //     }
         
-    }
+    // }
+
+    // begin threading code
+    struct socket_data data;
+    data.sockfd = sockfd;
+
+    pthread_t reading_thread_tid, writing_thread_tid;
+    retval = pthread_create(&reading_thread_tid, NULL, reading_thread_entry, &data);
+    retval = pthread_create(&writing_thread_tid, NULL, writing_thread_entry, &data);
+    // handle possible errors
+
+    pthread_join(reading_thread_tid, NULL);
+    pthread_join(writing_thread_tid, NULL);
 
     return 0;
 }

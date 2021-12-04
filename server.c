@@ -48,8 +48,6 @@ int main() {
 		else if (retval != -1) {
 			printf("message: '%s'\n", buffer);
 			
-			char buffer[1024] = {0};
-			sprintf(buffer, "%s", "test message to client");
 			printf("sending message to client\n");
 			write(active_socket, buffer, sizeof(buffer));
 			printf("mesage sent\n");
@@ -63,7 +61,10 @@ int main() {
 			perror("error");
 		}
 		else if (new_socket != -1) {
-			printf("established new connection with socket %d\n", new_socket);
+			//TODO: Message below should be sent to all other users, not printed by server
+			printf("User%d has connected\n", new_socket);
+
+			//Handle adding socket
 			active_socket = new_socket;
 		}
 		
