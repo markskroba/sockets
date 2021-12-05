@@ -43,7 +43,13 @@ void removeActiveSocket(int sockfd) {
 	while(current != NULL) {
 
 		if(current->sockfd == sockfd) {
-			previous->next = current->next;
+			// when deleting first element
+			if(previous == NULL) {
+				head = current->next;
+			}
+			else {
+				previous->next = current->next;
+			}
 			return;
 		}
 
@@ -100,11 +106,14 @@ int main(int argc, char* argv[]) {
 				sendMessageToClients(messageToSend);
 			}
 			else if (retval == 0) {
+
 				char messageToSend[1042];
 				sprintf(messageToSend, "%s has quit", current->username);
 				printf("message: %s\n", messageToSend);
 				sendMessageToClients(messageToSend);
+
 				removeActiveSocket(current->sockfd);
+
 			}
 
 			current = current->next;
