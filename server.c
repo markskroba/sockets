@@ -21,6 +21,21 @@ struct active_socket {
 
 struct active_socket *head = NULL;
 
+void sendMessageToClients(char message[1042]) {
+	
+	struct active_socket *current = head;
+	while(current != NULL) {
+		int retval = write(current->sockfd, message, 1042);
+
+		if (retval == -1) {
+			perror("Error sending a message to user");
+		}
+
+		current = current->next;
+	}
+
+}
+
 int main() {
 	struct sockaddr_in address;
 
@@ -50,23 +65,29 @@ int main() {
 
 	while (true) {
 
-		char buffer[1024] = {0};
-		int retval = read(new_active_socket, buffer, sizeof(buffer));
-		if (retval == -1 && errno == EINVAL) {
-			perror("error reading");
-		}
-		else if (retval != -1) {
-			printf("message: '%s'\n", buffer);
-			
-			printf("sending message to client\n");
-			write(new_active_socket, buffer, sizeof(buffer));
-			printf("mesage sent\n");
+		// iterating over all the linked list elements to read from each one
+		struct active_socket * current = head;
+		while(current != NULL) {
+
+			char buffer[1024] = {0};
+			int retval = read(current->sockfd, buffer, sizeof(buffer));
+			printf("reading from %s\n", current->username);
+			if (retval == -1 && errno == EINVAL) {
+				perror("error reading");
+			}
+			else if (retval != -1) {
+				char messageToSend[1042];
+				sprintf(messageToSend, "%s: %s", current->username, buffer);
+				printf("message: %s\n", messageToSend);
+				sendMessageToClients(messageToSend);
+			}
+
+			current = current->next;
 
 		}
 
 		//adding new sockets
 		int new_sockfd = accept4(initial_sockfd, NULL, NULL, SOCK_NONBLOCK);
-		printf("%d\n", new_sockfd);
 		if (new_sockfd == -1 && errno != EAGAIN) {
 			perror("error");
 		}
