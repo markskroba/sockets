@@ -22,6 +22,7 @@ struct active_socket {
 struct active_socket *head = NULL;
 
 void sendMessageToClients(char message[1042]) {
+	// Sends message to all clients
 	
 	struct active_socket *current = head;
 	while(current != NULL) {
@@ -32,6 +33,25 @@ void sendMessageToClients(char message[1042]) {
 		}
 
 		current = current->next;
+	}
+
+}
+
+void removeActiveSocket(int sockfd) {
+
+	struct active_socket *current = head;
+	struct active_socket *previous = NULL;
+
+	while(current != NULL) {
+
+		if(current->sockfd == sockfd) {
+			previous->next = current->next;
+			return;
+		}
+
+		previous = current;
+		current = current->next;
+
 	}
 
 }
@@ -60,7 +80,7 @@ int main() {
 		perror("Error listening for clients");
 		exit(-1);
 	}	
-	printf("server have started");
+
 	int new_active_socket;
 
 	while (true) {
@@ -71,15 +91,22 @@ int main() {
 
 			char buffer[1024] = {0};
 			int retval = read(current->sockfd, buffer, sizeof(buffer));
-			printf("reading from %s\n", current->username);
+			printf("reading from %s, retval: %d\n", current->username, retval);
 			if (retval == -1 && errno == EINVAL) {
 				perror("error reading");
 			}
-			else if (retval != -1) {
+			else if (retval == 1024) {
 				char messageToSend[1042];
 				sprintf(messageToSend, "%s: %s", current->username, buffer);
 				printf("message: %s\n", messageToSend);
 				sendMessageToClients(messageToSend);
+			}
+			else if (retval == 0) {
+				char messageToSend[1042];
+				sprintf(messageToSend, "%s has quit", current->username);
+				printf("message: %s\n", messageToSend);
+				sendMessageToClients(messageToSend);
+				removeActiveSocket(current->sockfd);
 			}
 
 			current = current->next;
@@ -93,14 +120,15 @@ int main() {
 		}
 		else if (new_sockfd != -1) {
 			// Handle adding socket, add new active_socket at the beginning of a list
-			printf("has connected\n");
 			struct active_socket *new_socket = (struct active_socket*) malloc(sizeof(struct active_socket));
 			new_socket->sockfd = new_sockfd;
 			sprintf(new_socket->username, "%s%d", "User", new_sockfd);
 			new_socket->next = head;
 			head = new_socket;
-			//TODO: Message below should be sent to all other users, not printed by server
-			printf("%s has connected\n", head->username);
+
+			char user_connected_message[1042];
+			sprintf(user_connected_message, "%s has connected", head->username);
+			sendMessageToClients(user_connected_message);
 		}
 		
 		sleep(1);

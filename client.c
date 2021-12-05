@@ -35,7 +35,7 @@ void* reading_thread_entry(void* args) {
             exit(0);
         }
         else if (retval == 1042) {
-            printf("%d, %s\n", retval, buffer);
+            printf("%s\n", buffer);
         }
 
         sleep(1);
