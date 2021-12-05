@@ -10,8 +10,6 @@
 
 #include <netinet/in.h>
 
-#define PORT 2222 
-
 // linked list to keep information about active sockets
 struct active_socket {
 	int sockfd;
@@ -56,7 +54,7 @@ void removeActiveSocket(int sockfd) {
 
 }
 
-int main() {
+int main(int argc, char* argv[]) {
 	struct sockaddr_in address;
 
 	int initial_sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
@@ -67,7 +65,7 @@ int main() {
 
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons( PORT );
+	address.sin_port = htons( atoi(argv[1]) );
 
 	int retval = bind(initial_sockfd, (struct sockaddr *) &address, sizeof(address));
 	if (retval == -1) {

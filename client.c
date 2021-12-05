@@ -64,7 +64,7 @@ void* writing_thread_entry(void* args) {
     
 }
 
-int main() {
+int main(int argc, char* argv[]) {
 
 	int sockfd;
 	struct sockaddr_in address;
@@ -76,8 +76,8 @@ int main() {
     }
 
     address.sin_family = AF_INET;
-    address.sin_port = htons(PORT);
-    address.sin_addr.s_addr = inet_addr("127.0.0.1");
+    address.sin_port = htons( atoi(argv[2]) );
+    address.sin_addr.s_addr = inet_addr( argv[1] );
 
     int retval = connect(sockfd, (struct sockaddr *) &address, sizeof(address));
     if (retval == -1 && errno != EINPROGRESS) {
