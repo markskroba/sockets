@@ -12,11 +12,20 @@
 
 #define PORT 2222 
 
+// linked list to keep information about active sockets
+struct active_socket {
+	int sockfd;
+	char username[16];
+	struct active_socket *next;
+};
+
+struct active_socket *head = NULL;
+
 int main() {
 	struct sockaddr_in address;
 
-	int sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
-	if (sockfd == 0) {
+	int initial_sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+	if (initial_sockfd == 0) {
 		perror("Error creating socket");
 		exit(-1);
 	}
@@ -25,23 +34,24 @@ int main() {
 	address.sin_addr.s_addr = INADDR_ANY;
 	address.sin_port = htons( PORT );
 
-	int retval = bind(sockfd, (struct sockaddr *) &address, sizeof(address));
+	int retval = bind(initial_sockfd, (struct sockaddr *) &address, sizeof(address));
 	if (retval == -1) {
 		perror("Error binding a path to socket");
 		exit(-1);
 	}
 
-	retval = listen(sockfd, 10);
+	retval = listen(initial_sockfd, 10);
 	if (retval == -1) {
 		perror("Error listening for clients");
 		exit(-1);
 	}	
-	int active_socket;
+	printf("server have started");
+	int new_active_socket;
 
 	while (true) {
 
 		char buffer[1024] = {0};
-		int retval = read(active_socket, buffer, sizeof(buffer));
+		int retval = read(new_active_socket, buffer, sizeof(buffer));
 		if (retval == -1 && errno == EINVAL) {
 			perror("error reading");
 		}
@@ -49,28 +59,32 @@ int main() {
 			printf("message: '%s'\n", buffer);
 			
 			printf("sending message to client\n");
-			write(active_socket, buffer, sizeof(buffer));
+			write(new_active_socket, buffer, sizeof(buffer));
 			printf("mesage sent\n");
 
-			// return 0;
 		}
 
 		//adding new sockets
-		int new_socket = accept4(sockfd, NULL, NULL, SOCK_NONBLOCK);
-		if (new_socket == -1 && errno != EAGAIN) {
+		int new_sockfd = accept4(initial_sockfd, NULL, NULL, SOCK_NONBLOCK);
+		printf("%d\n", new_sockfd);
+		if (new_sockfd == -1 && errno != EAGAIN) {
 			perror("error");
 		}
-		else if (new_socket != -1) {
+		else if (new_sockfd != -1) {
+			// Handle adding socket, add new active_socket at the beginning of a list
+			printf("has connected\n");
+			struct active_socket *new_socket = (struct active_socket*) malloc(sizeof(struct active_socket));
+			new_socket->sockfd = new_sockfd;
+			sprintf(new_socket->username, "%s%d", "User", new_sockfd);
+			new_socket->next = head;
+			head = new_socket;
 			//TODO: Message below should be sent to all other users, not printed by server
-			printf("User%d has connected\n", new_socket);
-
-			//Handle adding socket
-			active_socket = new_socket;
+			printf("%s has connected\n", head->username);
 		}
 		
 		sleep(1);
 	}
 
-	close(sockfd);
+	close(initial_sockfd);
 	return 0;
 }
