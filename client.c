@@ -27,10 +27,15 @@ void* reading_thread_entry(void* args) {
 
     while (true) {
 
-        char buffer[1024] = {0};
+        char buffer[1042] = {0};
         int retval = read(sockfd, buffer, sizeof(buffer));
-        if (retval >= 0) {
-            printf("%s\n", buffer);
+        if (retval == 0) {
+            printf("Server shut down unexpectedly\n");
+            close(sockfd);
+            exit(0);
+        }
+        else if (retval == 1042) {
+            printf("%d, %s\n", retval, buffer);
         }
 
         sleep(1);
@@ -81,25 +86,6 @@ int main() {
     }
 
     // at this point, connection to server should be established
-
-    // printf("established connection %d\n", retval);
-
-    // char buffer[1024] = {0};
-    // fgets(buffer, 1024, stdin);
-    // buffer[strcspn(buffer, "\n")] = 0;
-    // printf("message: %s, size: %d\n", buffer,sizeof(buffer));
-    // write(sockfd, buffer, sizeof(buffer));
-    // printf("message sent\n");
-
-    // while (true) {
-    //     int retval = read(sockfd, buffer, sizeof(buffer));
-
-    //     if (retval != -1) {
-    //         printf("received message: %s\n", buffer);
-    //         break;
-    //     }
-        
-    // }
 
     // begin threading code
     struct socket_data data;
