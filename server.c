@@ -106,11 +106,9 @@ int main(int argc, char* argv[]) {
 				char *token = strtok(buffer_to_parse, " ");
 				if (strcmp(token, "name") == 0) {
 
-					printf("name command\n");
 					char username_buffer[1024];
 					sprintf(username_buffer, "%s", buffer);
 					memmove(username_buffer, username_buffer+5, sizeof(username_buffer));
-					printf("%s\n", username_buffer);
 					char messageToSend[1042];
 					sprintf(messageToSend, "%s has changed their name to %s", current->username, username_buffer);
 					sendMessageToClients(messageToSend);
@@ -121,7 +119,6 @@ int main(int argc, char* argv[]) {
 
 					char messageToSend[1042];
 					sprintf(messageToSend, "%s: %s", current->username, buffer);
-					printf("message: %s\n", messageToSend);
 					sendMessageToClients(messageToSend);
 
 				}
@@ -130,7 +127,6 @@ int main(int argc, char* argv[]) {
 
 				char messageToSend[1042];
 				sprintf(messageToSend, "%s has quit", current->username);
-				printf("message: %s\n", messageToSend);
 				sendMessageToClients(messageToSend);
 
 				removeActiveSocket(current->sockfd);
