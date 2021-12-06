@@ -13,8 +13,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define PORT 2222
-
 struct socket_data {
     int sockfd;
 };

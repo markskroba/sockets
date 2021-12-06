@@ -95,15 +95,36 @@ int main(int argc, char* argv[]) {
 
 			char buffer[1024] = {0};
 			int retval = read(current->sockfd, buffer, sizeof(buffer));
-			printf("reading from %s, retval: %d\n", current->username, retval);
 			if (retval == -1 && errno == EINVAL) {
 				perror("error reading");
 			}
 			else if (retval == 1024) {
-				char messageToSend[1042];
-				sprintf(messageToSend, "%s: %s", current->username, buffer);
-				printf("message: %s\n", messageToSend);
-				sendMessageToClients(messageToSend);
+
+				// handling commands
+				char buffer_to_parse[1024];
+				sprintf(buffer_to_parse, "%s", buffer);
+				char *token = strtok(buffer_to_parse, " ");
+				if (strcmp(token, "name") == 0) {
+
+					printf("name command\n");
+					char username_buffer[1024];
+					sprintf(username_buffer, "%s", buffer);
+					memmove(username_buffer, username_buffer+5, sizeof(username_buffer));
+					printf("%s\n", username_buffer);
+					char messageToSend[1042];
+					sprintf(messageToSend, "%s has changed their name to %s", current->username, username_buffer);
+					sendMessageToClients(messageToSend);
+					sprintf(current->username, "%s", username_buffer);
+
+				}
+				else {
+
+					char messageToSend[1042];
+					sprintf(messageToSend, "%s: %s", current->username, buffer);
+					printf("message: %s\n", messageToSend);
+					sendMessageToClients(messageToSend);
+
+				}
 			}
 			else if (retval == 0) {
 
