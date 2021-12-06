@@ -54,6 +54,14 @@ void* writing_thread_entry(void* args) {
         fgets(buffer, 1024, stdin);
         buffer[strcspn(buffer, "\n")] = 0;
 
+        char buffer_to_parse[1024];
+        sprintf(buffer_to_parse, "%s", buffer);
+        char *token = strtok(buffer_to_parse, " ");
+        if (strcmp(token, "quit") == 0 && strtok(NULL, " ") == NULL) {
+            close(sockfd);
+            exit(0);
+        }
+
         write(sockfd, buffer, sizeof(buffer));
 
     }
