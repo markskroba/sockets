@@ -113,7 +113,6 @@ int main(int argc, char* argv[]) {
 				sendMessageToClients(messageToSend);
 
 				removeActiveSocket(current->sockfd);
-
 			}
 
 			current = current->next;
